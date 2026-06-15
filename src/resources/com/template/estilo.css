@@ -1,0 +1,32 @@
+/* Cor de fundo da tela inteira */
+.root {
+    -fx-background-color: #1a1a2e;
+}
+
+/* Estilo dos textos (Labels) */
+.label {
+    -fx-text-fill: #e94560; /* Uma cor meio neon */
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+}
+
+/* Estilo do Botão */
+.button {
+    -fx-background-color: #0f3460;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8px; /* Borda arredondada */
+    -fx-cursor: hand;
+}
+
+/* Efeito quando o rato (mouse) passa por cima do botão */
+.button:hover {
+    -fx-background-color: #e94560;
+}
+
+/* Deixando a Tabela escura também */
+.table-view {
+    -fx-base: #1a1a2e;
+    -fx-control-inner-background: #1a1a2e;
+    -fx-table-cell-border-color: #0f3460;
+}
