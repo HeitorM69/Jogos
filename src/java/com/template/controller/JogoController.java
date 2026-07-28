@@ -1,27 +1,31 @@
-package com.template;
+package com.template.controller;
 
-import javafx.application.Platform;
+import com.template.model.dao.JogoDAO;
+import com.template.model.dto.JogoDTO;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.input.KeyCode;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.ResourceBundle;
+
+import validator.UsuarioValidator;
 
 public class JogoController implements Initializable {
 
     @FXML private TextField txtNome;
-    // UX Melhoria 1: ComboBox ao invés de TextField para opções restritas
     @FXML private ComboBox<String> cbxTipo;
     @FXML private TextField txtVersao;
 
@@ -37,7 +41,7 @@ public class JogoController implements Initializable {
     @FXML private TableColumn<JogoDTO, String> colTipo;
     @FXML private TableColumn<JogoDTO, String> colVersao;
 
-    private String acaoPendente = "";
+    private final UsuarioService usuarioService = new UsuarioService();
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -45,31 +49,20 @@ public class JogoController implements Initializable {
         colTipo.setCellValueFactory(new PropertyValueFactory<>("tipo"));
         colVersao.setCellValueFactory(new PropertyValueFactory<>("versao"));
 
-        // Preenche o ComboBox com os gêneros de jogos
         cbxTipo.setItems(FXCollections.observableArrayList(
                 "Ação", "Aventura", "RPG", "FPS", "Estratégia", "Esportes", "Simulação", "Outros"
         ));
 
         carregarJogos();
-        limparCampos(); // Já inicia bloqueando os botões corretos e limpando
-
-        Platform.runLater(() -> {
-            txtNome.getScene().setOnKeyPressed(event -> {
-                if (event.getCode() == KeyCode.ENTER) {
-                    confirmarAcaoPendente();
-                }
-            });
-        });
+        limparCampos();
     }
 
-    // UX Melhoria 2: Método para validar campos obrigatórios
     private boolean isCamposValidos() {
         if (txtNome.getText().trim().isEmpty() ||
                 cbxTipo.getValue() == null ||
                 txtVersao.getText().trim().isEmpty()) {
 
-            lblMensagem.setText("Erro: Preencha todos os campos obrigatórios!");
-            lblMensagem.setStyle("-fx-text-fill: #E94560;"); // Vermelho erro
+            exibirMensagem("Erro: Preencha todos os campos obrigatórios!", "#E94560");
             return false;
         }
         return true;
@@ -77,78 +70,63 @@ public class JogoController implements Initializable {
 
     @FXML
     private void btnCadastrarAction() {
-        if (!isCamposValidos()) return; // Barra a execução se for inválido
+        if (!isCamposValidos()) return;
 
         JogoDTO jogo = new JogoDTO();
-        jogo.setNome(txtNome.getText());
-        jogo.setTipo(cbxTipo.getValue()); // Pega do ComboBox
-        jogo.setVersao(txtVersao.getText());
+        jogo.setNome(txtNome.getText().trim());
+        jogo.setTipo(cbxTipo.getValue());
+        jogo.setVersao(txtVersao.getText().trim());
 
         JogoDAO dao = new JogoDAO();
         dao.cadastrarJogo(jogo);
 
-        lblMensagem.setText("Jogo cadastrado com sucesso!");
-        lblMensagem.setStyle("-fx-text-fill: #A6B1E1;");
-
+        exibirMensagem("Jogo cadastrado com sucesso!", "#A6B1E1");
         limparCampos();
         carregarJogos();
     }
 
     @FXML
     private void btnAlterarAction() {
+        JogoDTO selecionado = tblJogo.getSelectionModel().getSelectedItem();
+        if (selecionado == null) return;
+
         if (!isCamposValidos()) return;
 
-        JogoDTO selecionado = tblJogo.getSelectionModel().getSelectedItem();
-        if (selecionado != null) {
-            acaoPendente = "ALTERAR";
-            lblMensagem.setText("Aviso: Pressione ENTER para confirmar a ALTERAÇÃO de '" + selecionado.getNome() + "'.");
-            lblMensagem.setStyle("-fx-text-fill: #E94560;");
+        if (exibirConfirmacao("Confirmar Alteração", "Deseja realmente alterar o jogo '" + selecionado.getNome() + "'?")) {
+            JogoDTO jogo = new JogoDTO();
+            jogo.setId(selecionado.getId());
+            jogo.setNome(txtNome.getText().trim());
+            jogo.setTipo(cbxTipo.getValue());
+            jogo.setVersao(txtVersao.getText().trim());
+
+            JogoDAO dao = new JogoDAO();
+            dao.alterarJogo(jogo);
+
+            exibirMensagem("Jogo alterado com sucesso!", "#A6B1E1");
+            limparCampos();
+            carregarJogos();
         }
     }
 
     @FXML
     private void btnExcluirAction() {
         JogoDTO selecionado = tblJogo.getSelectionModel().getSelectedItem();
-        if (selecionado != null) {
-            acaoPendente = "EXCLUIR";
-            lblMensagem.setText("Aviso: Pressione ENTER para confirmar a EXCLUSÃO de '" + selecionado.getNome() + "'.");
-            lblMensagem.setStyle("-fx-text-fill: #E94560;");
-        }
-    }
-
-    private void confirmarAcaoPendente() {
-        if (acaoPendente.equals("")) return;
-
-        JogoDTO selecionado = tblJogo.getSelectionModel().getSelectedItem();
         if (selecionado == null) return;
 
-        JogoDAO dao = new JogoDAO();
-
-        if (acaoPendente.equals("ALTERAR")) {
-            JogoDTO jogo = new JogoDTO();
-            jogo.setId(selecionado.getId());
-            jogo.setNome(txtNome.getText());
-            jogo.setTipo(cbxTipo.getValue());
-            jogo.setVersao(txtVersao.getText());
-            dao.alterarJogo(jogo);
-            lblMensagem.setText("Jogo alterado com sucesso!");
-            lblMensagem.setStyle("-fx-text-fill: #A6B1E1;");
-
-        } else if (acaoPendente.equals("EXCLUIR")) {
+        if (exibirConfirmacao("Confirmar Exclusão", "Deseja realmente excluir o jogo '" + selecionado.getNome() + "'?")) {
+            JogoDAO dao = new JogoDAO();
             dao.excluirJogo(selecionado.getId());
-            lblMensagem.setText("Jogo excluído com sucesso!");
-            lblMensagem.setStyle("-fx-text-fill: #A6B1E1;");
-        }
 
-        acaoPendente = "";
-        limparCampos();
-        carregarJogos();
+            exibirMensagem("Jogo excluído com sucesso!", "#A6B1E1");
+            limparCampos();
+            carregarJogos();
+        }
     }
 
     @FXML
     private void btnLimparAction() {
         limparCampos();
-        lblMensagem.setText(""); // Limpa os avisos
+        lblMensagem.setText("");
     }
 
     @FXML
@@ -164,13 +142,11 @@ public class JogoController implements Initializable {
         JogoDTO selecionado = tblJogo.getSelectionModel().getSelectedItem();
         if (selecionado != null) {
             txtNome.setText(selecionado.getNome());
-            cbxTipo.setValue(selecionado.getTipo()); // Joga pro ComboBox
+            cbxTipo.setValue(selecionado.getTipo());
             txtVersao.setText(selecionado.getVersao());
 
-            acaoPendente = "";
             lblMensagem.setText("");
 
-            // UX Melhoria 3: Habilita edição, bloqueia cadastro
             btnCadastrar.setDisable(true);
             btnAlterar.setDisable(false);
             btnExcluir.setDisable(false);
@@ -185,11 +161,24 @@ public class JogoController implements Initializable {
         txtNome.requestFocus();
 
         tblJogo.getSelectionModel().clearSelection();
-        acaoPendente = "";
 
-        // UX Melhoria 3: Estado padrão (só permite cadastrar)
         btnCadastrar.setDisable(false);
         btnAlterar.setDisable(true);
         btnExcluir.setDisable(true);
+    }
+
+    private void exibirMensagem(String mensagem, String corHex) {
+        lblMensagem.setText(mensagem);
+        lblMensagem.setStyle("-fx-text-fill: " + corHex + ";");
+    }
+
+    private boolean exibirConfirmacao(String titulo, String mensagem) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle(titulo);
+        alert.setHeaderText(null);
+        alert.setContentText(mensagem);
+
+        Optional<ButtonType> resultado = alert.showAndWait();
+        return resultado.isPresent() && resultado.get() == ButtonType.OK;
     }
 }

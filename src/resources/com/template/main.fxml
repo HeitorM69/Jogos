@@ -3,7 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane prefHeight="600.0" prefWidth="660.0" style="-fx-background-color: #1A1A2E;" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.template.JogoController">
+<AnchorPane prefHeight="600.0" prefWidth="660.0" style="-fx-background-color: #1A1A2E;" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.template.controller.JogoController">
     <children>
 
         <Label layoutX="20.0" layoutY="20.0" style="-fx-text-fill: #E94560; -fx-font-size: 26px; -fx-font-weight: bold;" text="Biblioteca de Jogos" />
