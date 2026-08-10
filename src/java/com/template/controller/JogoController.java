@@ -1,7 +1,10 @@
 package com.template.controller;
 
-import com.template.model.dao.JogoDAO;
 import com.template.model.dto.JogoDTO;
+import com.template.service.IJogoService;
+import com.template.service.JogoService;
+import com.template.validator.Validador;
+import com.template.validator.JogoValidator;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -21,8 +24,6 @@ import java.util.ArrayList;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
-import validator.UsuarioValidator;
-
 public class JogoController implements Initializable {
 
     @FXML private TextField txtNome;
@@ -41,7 +42,9 @@ public class JogoController implements Initializable {
     @FXML private TableColumn<JogoDTO, String> colTipo;
     @FXML private TableColumn<JogoDTO, String> colVersao;
 
-    private final UsuarioService usuarioService = new UsuarioService();
+    // Dependendo de interfaces (DIP)
+    private final IJogoService jogoService = new JogoService();
+    private final Validador<JogoDTO> jogoValidator = new JogoValidator();
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -57,28 +60,26 @@ public class JogoController implements Initializable {
         limparCampos();
     }
 
-    private boolean isCamposValidos() {
-        if (txtNome.getText().trim().isEmpty() ||
-                cbxTipo.getValue() == null ||
-                txtVersao.getText().trim().isEmpty()) {
-
-            exibirMensagem("Erro: Preencha todos os campos obrigatórios!", "#E94560");
-            return false;
-        }
-        return true;
-    }
-
-    @FXML
-    private void btnCadastrarAction() {
-        if (!isCamposValidos()) return;
-
+    private JogoDTO preencherDTO() {
         JogoDTO jogo = new JogoDTO();
         jogo.setNome(txtNome.getText().trim());
         jogo.setTipo(cbxTipo.getValue());
         jogo.setVersao(txtVersao.getText().trim());
+        return jogo;
+    }
 
-        JogoDAO dao = new JogoDAO();
-        dao.cadastrarJogo(jogo);
+    @FXML
+    private void btnCadastrarAction() {
+        JogoDTO jogo = preencherDTO();
+
+        // Validação delegada à classe específica (SRP)
+        if (!jogoValidator.validar(jogo)) {
+            exibirMensagem("Erro: Preencha todos os campos obrigatórios!", "#E94560");
+            return;
+        }
+
+        // Lógica de negócios delegada ao serviço (SRP)
+        jogoService.cadastrarJogo(jogo);
 
         exibirMensagem("Jogo cadastrado com sucesso!", "#A6B1E1");
         limparCampos();
@@ -90,17 +91,16 @@ public class JogoController implements Initializable {
         JogoDTO selecionado = tblJogo.getSelectionModel().getSelectedItem();
         if (selecionado == null) return;
 
-        if (!isCamposValidos()) return;
+        JogoDTO jogo = preencherDTO();
+        jogo.setId(selecionado.getId());
+
+        if (!jogoValidator.validar(jogo)) {
+            exibirMensagem("Erro: Preencha todos os campos obrigatórios!", "#E94560");
+            return;
+        }
 
         if (exibirConfirmacao("Confirmar Alteração", "Deseja realmente alterar o jogo '" + selecionado.getNome() + "'?")) {
-            JogoDTO jogo = new JogoDTO();
-            jogo.setId(selecionado.getId());
-            jogo.setNome(txtNome.getText().trim());
-            jogo.setTipo(cbxTipo.getValue());
-            jogo.setVersao(txtVersao.getText().trim());
-
-            JogoDAO dao = new JogoDAO();
-            dao.alterarJogo(jogo);
+            jogoService.alterarJogo(jogo);
 
             exibirMensagem("Jogo alterado com sucesso!", "#A6B1E1");
             limparCampos();
@@ -114,8 +114,7 @@ public class JogoController implements Initializable {
         if (selecionado == null) return;
 
         if (exibirConfirmacao("Confirmar Exclusão", "Deseja realmente excluir o jogo '" + selecionado.getNome() + "'?")) {
-            JogoDAO dao = new JogoDAO();
-            dao.excluirJogo(selecionado.getId());
+            jogoService.excluirJogo(selecionado.getId());
 
             exibirMensagem("Jogo excluído com sucesso!", "#A6B1E1");
             limparCampos();
@@ -131,8 +130,7 @@ public class JogoController implements Initializable {
 
     @FXML
     private void carregarJogos() {
-        JogoDAO dao = new JogoDAO();
-        ArrayList<JogoDTO> lista = dao.listarJogos();
+        ArrayList<JogoDTO> lista = jogoService.listarJogos();
         ObservableList<JogoDTO> obsLista = FXCollections.observableArrayList(lista);
         tblJogo.setItems(obsLista);
     }

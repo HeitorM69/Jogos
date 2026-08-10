@@ -8,9 +8,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+
+import static com.template.util.DialogUtil.showError;
 
 public class JogoDAO {
     private Connection conn; // Certifique-se de iniciar sua conexão aqui
+    private static final Logger logger = Logger.getLogger(JogoDAO.class.getName());
+
+
 
     public void cadastrarJogo(JogoDTO objJogoDTO) {
         String sql = "INSERT INTO jogo (nome, tipo, versao) VALUES (?, ?, ?)";
@@ -27,7 +34,8 @@ public class JogoDAO {
             pstm.execute();
             pstm.close();
         } catch (SQLException erro) {
-            System.out.println("Erro JogoDAO Cadastrar: " + erro.getMessage());
+            logger.log(Level.SEVERE, "Erro ao cadastrar jogo", erro);
+            showError("Erro ao cadastrar jogo");
         }
     }
 
@@ -54,7 +62,8 @@ public class JogoDAO {
             }
             pstm.close();
         } catch (SQLException erro) {
-            System.out.println("Erro JogoDAO Listar: " + erro.getMessage());
+            logger.log(Level.SEVERE, "Erro ao listar jogo", erro);
+            showError("Erro ao listar jogo");
         }
         return lista;
     }
@@ -80,7 +89,8 @@ public class JogoDAO {
             pstm.close();
 
         } catch (SQLException erro) {
-            System.out.println("Erro JogoDAO Alterar: " + erro.getMessage());
+            logger.log(Level.SEVERE, "Erro ao alterar jogo", erro);
+            showError("Erro ao alterar jogo");
         }
     }
 
@@ -100,7 +110,8 @@ public class JogoDAO {
             pstm.close();
 
         } catch (SQLException erro) {
-            System.out.println("Erro JogoDAO Excluir: " + erro.getMessage());
+            logger.log(Level.SEVERE, "Erro ao excluir jogo", erro);
+            showError("Erro ao excluir jogo");
         }
     }
 }
