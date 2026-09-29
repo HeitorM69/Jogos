@@ -1,13 +1,8 @@
 package com.template.util;
-
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
-
-
-
 public class DialogUtil {
-    public static void showError (String mensagem)
-    {
+    public static void showError (String mensagem) {
         Alert alert = new Alert(AlertType.ERROR);
         alert.setTitle("Erro");
         alert.setHeaderText(null);
