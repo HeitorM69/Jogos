@@ -34,6 +34,12 @@ public class JogoValidador implements IJogoValidador {
                         versao
                 )
         );
+        validadores.add(
+                new LetraValidador(
+                        versao
+                )
+        );
+
 
         for (Validador<String> validador : validadores) {
             if (!validador.validar(validador.getValor())) {
