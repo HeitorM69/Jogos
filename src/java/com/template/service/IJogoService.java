@@ -1,9 +1,14 @@
 package com.template.service;
+
 import com.template.model.dto.JogoDTO;
-import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Define as operações disponíveis para o gerenciamento de jogos.
+ */
 public interface IJogoService {
     void cadastrarJogo(JogoDTO jogo);
     void alterarJogo(JogoDTO jogo);
     void excluirJogo(int id);
-    ArrayList<JogoDTO> listarJogos();
+    List<JogoDTO> listarJogos();
 }

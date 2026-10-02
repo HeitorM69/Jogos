@@ -1,22 +1,28 @@
-package validation;
+package com.template.validator;
 
-public class CamposObrigatoriosValidador implements Validador<String> {
-    private String valor;
-    private String nomeCampo;
+public class CamposObrigatoriosValidador
+        implements Validador<String> {
 
-    public CamposObrigatoriosValidador(String valor, String nomeCampo) {
-        this.valor = valor;
+    private final String nomeCampo;
+    private final String valor;
+
+    public CamposObrigatoriosValidador(
+            String nomeCampo,
+            String valor
+    ) {
         this.nomeCampo = nomeCampo;
+        this.valor = valor;
     }
 
     @Override
-    public boolean validar() {
-        return valor != null && !valor.trim().isEmpty();
+    public boolean validar(String valorAtual) {
+        return valorAtual != null
+                && !valorAtual.trim().isEmpty();
     }
 
     @Override
     public String getMensagemErro() {
-        return "O campo " + nomeCampo + " é obrigatório.";
+        return "O campo '" + nomeCampo + "' é obrigatório.";
     }
 
     @Override

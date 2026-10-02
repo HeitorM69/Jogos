@@ -1,29 +1,47 @@
-package validation;
+package com.template.validator;
 
 import java.util.ArrayList;
 import java.util.List;
+import static com.template.util.DialogUtil.showError;
 
 public class JogoValidador implements IJogoValidador {
-    private List<Validador<?>> validadores = new ArrayList<>();
 
     @Override
-    public void adicionarValidador(Validador<?> validador) {
-        validadores.add(validador);
-    }
+    public boolean validarJogo(
+            String nome,
+            String tipo,
+            String versao
+    ) {
+        List<Validador<String>> validadores = new ArrayList<>();
 
-    @Override
-    public List<String> validarTodos() {
-        List<String> mensagensErro = new ArrayList<>();
-        for (Validador<?> validador : validadores) {
-            if (!validador.validar()) {
-                mensagensErro.add(validador.getMensagemErro());
+        validadores.add(
+                new CamposObrigatoriosValidador(
+                        "Nome do Jogo",
+                        nome
+                )
+        );
+
+        validadores.add(
+                new CamposObrigatoriosValidador(
+                        "Tipo / Gênero",
+                        tipo
+                )
+        );
+
+        validadores.add(
+                new CamposObrigatoriosValidador(
+                        "Versão",
+                        versao
+                )
+        );
+
+        for (Validador<String> validador : validadores) {
+            if (!validador.validar(validador.getValor())) {
+                showError(validador.getMensagemErro());
+                return false;
             }
         }
-        return mensagensErro;
-    }
 
-    @Override
-    public void limparValidadores() {
-        validadores.clear();
+        return true;
     }
 }

@@ -1,9 +1,12 @@
-package validation;
+package com.template.validator;
 
-import java.util.List;
-
+/**
+ * Define a validação dos dados necessários para um jogo.
+ */
 public interface IJogoValidador {
-    void adicionarValidador(Validador<?> validador);
-    List<String> validarTodos();
-    void limparValidadores();
+    boolean validarJogo(
+            String nome,
+            String tipo,
+            String versao
+    );
 }

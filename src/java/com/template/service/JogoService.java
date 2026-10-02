@@ -1,26 +1,34 @@
 package com.template.service;
+
 import com.template.model.dao.JogoDAO;
 import com.template.model.dto.JogoDTO;
-import java.util.ArrayList;
+import java.util.List;
+
 public class JogoService implements IJogoService {
-    private final JogoDAO dao;
-    public JogoService() {
-        this.dao = new JogoDAO();
+
+    private final JogoDAO jogoDAO;
+
+    public JogoService(JogoDAO jogoDAO) {
+        this.jogoDAO = jogoDAO;
     }
+
     @Override
     public void cadastrarJogo(JogoDTO jogo) {
-        dao.cadastrarJogo(jogo);
+        jogoDAO.cadastrarJogo(jogo);
     }
+
     @Override
     public void alterarJogo(JogoDTO jogo) {
-        dao.alterarJogo(jogo);
+        jogoDAO.alterarJogo(jogo);
     }
+
     @Override
     public void excluirJogo(int id) {
-        dao.excluirJogo(id);
+        jogoDAO.excluirJogo(id);
     }
+
     @Override
-    public ArrayList<JogoDTO> listarJogos() {
-        return dao.listarJogos();
+    public List<JogoDTO> listarJogos() {
+        return jogoDAO.listarJogos();
     }
 }
